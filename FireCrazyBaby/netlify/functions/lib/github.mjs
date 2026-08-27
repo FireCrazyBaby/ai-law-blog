@@ -18,7 +18,7 @@ export async function commitPost({ title, pubDate, sourceName, sourceUrl, snippe
 
   const dateStr = pubDate.toISOString().slice(0, 10);
   const slug = `${dateStr}-${slugify(title)}`;
-  const path = `src/content/posts/${slug}.md`;
+  const path = `FireCrazyBaby/src/content/posts/${slug}.md`;
 
   const frontmatter = [
     "---",
