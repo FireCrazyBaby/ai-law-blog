@@ -1,0 +1,228 @@
+# Setup guide: your AI & Law headline blog
+
+This assumes you've never used GitHub, Netlify, or a terminal before. Every
+step is a web page and a button. There is no software to install and no
+commands to type. Budget about 45–60 minutes, in one sitting or spread
+across a few.
+
+**Before you start:** open a blank note (Notes app, a Google Doc, whatever)
+to paste secret values into as you collect them. You'll gather five things
+along the way — a GitHub token, an Anthropic API key, a Telegram bot token,
+a Telegram chat ID, and a password you make up yourself. Delete this note
+once everything is pasted into Netlify in Part 5.
+
+---
+
+## Part 1 — GitHub: hold your code and your posts
+
+GitHub is just a place to store the project's files (and, later, every
+blog post you approve — each one becomes a small text file there).
+
+1. Go to **github.com** and click **Sign up**. Use any email, pick a
+   username, verify your email. It's free.
+2. Once logged in, click the **+** icon in the top-right corner, then
+   **New repository**.
+3. Name it `ai-law-blog` (or anything you like). Leave everything else as
+   default. Click **Create repository**.
+4. Unzip the project file you downloaded from Claude, if you haven't
+   already (double-click the `.zip` file — Windows and Mac both do this
+   automatically).
+5. Back on your new GitHub repo's page, click **Add file → Upload files**.
+6. Open the unzipped folder on your computer, select **everything inside
+   it** (not the folder itself — go inside it first, then select all),
+   and drag those files and folders onto the GitHub upload box. (This
+   works best in Chrome or Edge, which support dragging whole folders.)
+7. Scroll down, leave the commit message as-is or type "Initial upload",
+   and click **Commit changes**.
+8. Note your repo's name in the form `yourusername/ai-law-blog` — you'll
+   need this exact text later.
+
+### Get a GitHub token (lets the bot publish posts on your behalf)
+
+9. Click your profile picture (top right) → **Settings**.
+10. Scroll to the very bottom of the left sidebar → **Developer settings**.
+11. **Personal access tokens → Tokens (classic) → Generate new token →
+    Generate new token (classic)**.
+12. Give it any name, e.g. "ai-law-blog". Under "Select scopes," check the
+    box labeled **repo** (this automatically checks everything under it).
+13. Scroll down and click **Generate token**.
+14. **Copy the token immediately** — it looks like `ghp_xxxxxxxxxxxx` and
+    is shown to you exactly once. Paste it into your notes as
+    `GITHUB_TOKEN`.
+
+---
+
+## Part 2 — Anthropic: the AI that filters and drafts comments
+
+1. Go to **console.anthropic.com** and sign up / log in.
+2. You'll be asked to add a payment method and load a small amount of
+   credit (often a $5 minimum) before the API key works — this is normal
+   and it's pay-as-you-go. Realistic cost for this project is very low
+   (well under a cup of coffee per month for typical volumes), since each
+   headline check uses Anthropic's cheapest, fastest model.
+3. In the left sidebar, click **API Keys → Create Key**. Name it anything.
+4. Copy the key (starts with `sk-ant-`) into your notes as
+   `ANTHROPIC_API_KEY`.
+
+---
+
+## Part 3 — Telegram: where you'll review and approve headlines
+
+1. Open Telegram (phone or desktop) and search for **BotFather** — look
+   for the one with a blue checkmark.
+2. Start a chat with it and send: `/newbot`
+3. Answer its two questions: a display name (anything, e.g. "AI Law Blog
+   Bot") and a username that must end in "bot" and be unique (e.g.
+   `ailawblog_yourname_bot`).
+4. BotFather replies with a token that looks like
+   `123456789:AAExampleTokenTextHere`. Copy it into your notes as
+   `TELEGRAM_BOT_TOKEN`.
+5. Now search for **your new bot** by the username you just picked, open
+   a chat with it, and send it any message (e.g. "hi"). Bots can't message
+   you first, so this step is required.
+6. In a browser address bar, visit this URL, replacing `<TOKEN>` with your
+   actual bot token:
+
+   ```
+   https://api.telegram.org/bot<TOKEN>/getUpdates
+   ```
+
+   You'll see some text (JSON). Look for `"chat":{"id":` followed by a
+   number — that number is your chat ID. Copy it into your notes as
+   `TELEGRAM_CHAT_ID`. (If you see `"result":[]`, go back and message the
+   bot again, then reload this page.)
+
+---
+
+## Part 4 — Netlify: hosts your site and runs the hourly check
+
+1. Go to **netlify.com** and sign up — choosing **"Sign up with GitHub"**
+   is easiest since it connects the two automatically.
+2. From your Netlify dashboard: **Add new site → Import an existing
+   project → Deploy with GitHub**. Authorize Netlify if it asks.
+3. Pick your `ai-law-blog` repository from the list.
+4. Netlify should auto-fill the build settings (build command
+   `npm run build`, publish directory `dist`) because the project already
+   includes that configuration. Don't change anything — just click
+   **Deploy**.
+5. Wait a minute or two for the first build. When it's done, Netlify gives
+   you a live web address like `https://random-name-123.netlify.app` —
+   that's your blog. (Optional: **Site configuration → Change site name**
+   to pick something nicer.)
+
+---
+
+## Part 5 — Add your secret keys to Netlify
+
+1. In your site's dashboard: **Site configuration → Environment
+   variables → Add a variable → Add a single variable**.
+2. Add each of these six, one at a time, pasting the values from your
+   notes:
+
+   | Key | Value |
+   |---|---|
+   | `TELEGRAM_BOT_TOKEN` | from Part 3 |
+   | `TELEGRAM_CHAT_ID` | from Part 3 |
+   | `GITHUB_TOKEN` | from Part 1 |
+   | `GITHUB_REPO` | `yourusername/ai-law-blog`, from Part 1 |
+   | `ANTHROPIC_API_KEY` | from Part 2 |
+   | `TELEGRAM_WEBHOOK_SECRET` | make up any random string yourself, e.g. `x7Qp2zLm94R` |
+
+3. Environment variables only take effect on a *new* deploy, so go to the
+   **Deploys** tab → **Trigger deploy → Deploy site** once you've added
+   all six.
+
+---
+
+## Part 6 — Point Telegram at your new site
+
+Once the redeploy finishes:
+
+1. Copy your site's URL (e.g. `https://ai-law-watch.netlify.app` — no
+   slash at the end).
+2. In a browser address bar, visit this URL with your own values filled
+   in:
+
+   ```
+   https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=<YOUR_SITE_URL>/.netlify/functions/telegram-webhook&secret_token=<TELEGRAM_WEBHOOK_SECRET>
+   ```
+
+3. You should see `{"ok":true,"result":true,"description":"Webhook was
+   set"}`. That means Telegram now knows where to send your button taps.
+
+---
+
+## Part 7 — Test it
+
+1. In your Netlify dashboard, click the **Functions** tab. You should see
+   `aggregate` and `telegram-webhook` listed.
+2. Open the `aggregate` function's page and look for a way to run it
+   manually right now (Netlify's wording for this has changed over the
+   years — look for "Trigger," "Run," or "Test"). This saves you from
+   waiting up to an hour for the first real run.
+3. Within a minute or two, check Telegram — you should see one or more
+   headlines arrive with **Approve / Edit comment / Skip** buttons.
+4. Tap **Approve** on one. The message should change to "✅ Posted!"
+5. Wait about a minute, then visit your site's homepage — the new post
+   should be there.
+
+If that worked, you're done — it now runs by itself every hour, no
+further action needed from you except approving headlines as they come
+in.
+
+---
+
+## Common problems
+
+**No headlines ever show up in Telegram.**
+Check the `aggregate` function's logs in Netlify (Functions tab →
+`aggregate`) for an error message. The most common cause is a missing or
+mistyped environment variable, or forgetting to redeploy after adding
+them (Part 5, step 3).
+
+**Buttons don't do anything when tapped.**
+Almost always a typo in the webhook URL from Part 6, or the site hasn't
+redeployed since you set `TELEGRAM_WEBHOOK_SECRET`. Re-visit the
+`setWebhook` URL from Part 6 and confirm it says `"ok":true`. Then check
+the `telegram-webhook` function's logs for errors.
+
+**The `getUpdates` page shows `"result":[]`.**
+Message your bot again (Part 3, step 5), wait a few seconds, and reload
+the page.
+
+**A function log says "GitHub commit failed."**
+Your `GITHUB_TOKEN` is probably missing the `repo` permission, or
+`GITHUB_REPO` isn't in exactly the form `username/repo-name`.
+
+**Too many irrelevant headlines, or too few.**
+Open `netlify/functions/sources.mjs` on github.com (click the file, then
+the pencil/edit icon), and change the number after
+`MIN_RELEVANCE_SCORE =` — higher means stricter. Commit the change; it
+takes effect on the next hourly run.
+
+**You want to add or remove a news source.**
+Same file, same edit-on-github.com approach — add or delete a line in the
+`RSS_FEEDS` or `GOOGLE_NEWS_QUERIES` list, then commit.
+
+**You want to pause everything for a while.**
+Site configuration → Environment variables → delete (or rename)
+`TELEGRAM_CHAT_ID`, then redeploy. The aggregator will see it's missing
+and do nothing until you put it back.
+
+---
+
+## What this costs
+
+- **GitHub, Netlify, Telegram:** free for this project's scale.
+- **Anthropic API:** pay-as-you-go, and cheap — this project deliberately
+  uses Anthropic's fastest, least expensive model for the relevance
+  scoring and comment drafts. Watch actual usage any time at
+  console.anthropic.com.
+
+## One thing worth being careful about
+
+Don't lose the tokens between copying them and pasting them into Netlify
+— GitHub's token in particular is shown to you exactly once and can never
+be viewed again (you'd have to generate a new one). Keep your temporary
+notes file open until every value is safely pasted into Netlify's
+environment variables, then delete it.

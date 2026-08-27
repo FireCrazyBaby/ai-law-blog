@@ -1,0 +1,28 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+const allPosts = await getCollection("posts");
+const posts = allPosts.sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<Layout title="AI & Law Watch">
+  <ul style="list-style: none; padding: 0; margin: 0;">
+    {posts.map((post) => (
+      <li style="border-bottom: 1px solid #e4e4ec; padding: 1.5rem 0;">
+        <div style="color: #5c5c70; font-size: 0.85rem; margin-bottom: 0.3rem;">
+          {post.data.pubDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+          &middot; {post.data.sourceName}
+        </div>
+        <h2 style="margin: 0 0 0.4rem; font-size: 1.3rem;">
+          <a href={`/posts/${post.id}/`} style="color: #1a1a2e; text-decoration: none;">
+            {post.data.title}
+          </a>
+        </h2>
+      </li>
+    ))}
+  </ul>
+  {posts.length === 0 && <p>No posts yet — approve a headline in Telegram to see it here.</p>}
+</Layout>

@@ -1,0 +1,19 @@
+{
+  "name": "ai-law-blog",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^5.0.0",
+    "@netlify/blobs": "^8.1.0",
+    "rss-parser": "^3.13.0"
+  }
+}
