@@ -4,8 +4,8 @@
 //
 // Its live address, once deployed, is:
 //   https://YOUR-SITE-NAME.netlify.app/.netlify/functions/telegram-webhook
-// You tell Telegram about this address once, during setup (SETUP_GUIDE
-// Part 6). You should never need to call this function yourself.
+// You tell Telegram about this address once, during setup. You should
+// never need to call this function yourself.
 
 import {
   getCandidate,
@@ -72,7 +72,7 @@ async function handleMessage(message) {
   if (!text) return;
 
   const pendingId = await getPendingEdit(chatId);
-  if (!pendingId) return; // Not waiting on anything -- ignore plain chat.
+  if (!pendingId) return;
 
   const candidate = await getCandidate(pendingId);
   await clearPendingEdit(chatId);
@@ -93,12 +93,6 @@ async function handleMessage(message) {
 }
 
 export default async (req) => {
-  const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
-  const receivedSecret = req.headers.get("x-telegram-bot-api-secret-token");
-  if (expectedSecret && receivedSecret !== expectedSecret) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
   let update;
   try {
     update = await req.json();
@@ -116,6 +110,5 @@ export default async (req) => {
     console.error("Webhook handling error:", err);
   }
 
-  // Telegram just needs a 200 response -- it doesn't look at the body.
   return new Response("OK", { status: 200 });
 };
